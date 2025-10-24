@@ -1,38 +1,6 @@
 import * as __WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__ from "@wordpress/interactivity";
-/******/ var __webpack_modules__ = ({
-
-/***/ 438:
-/***/ ((module) => {
-
-module.exports = import("@wordpress/interactivity-router");;
-
-/***/ })
-
-/******/ });
-/************************************************************************/
-/******/ // The module cache
-/******/ var __webpack_module_cache__ = {};
-/******/ 
-/******/ // The require function
-/******/ function __webpack_require__(moduleId) {
-/******/ 	// Check if module is in cache
-/******/ 	var cachedModule = __webpack_module_cache__[moduleId];
-/******/ 	if (cachedModule !== undefined) {
-/******/ 		return cachedModule.exports;
-/******/ 	}
-/******/ 	// Create a new module (and put it into the cache)
-/******/ 	var module = __webpack_module_cache__[moduleId] = {
-/******/ 		// no module.id needed
-/******/ 		// no module.loaded needed
-/******/ 		exports: {}
-/******/ 	};
-/******/ 
-/******/ 	// Execute the module function
-/******/ 	__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
-/******/ 
-/******/ 	// Return the exports of the module
-/******/ 	return module.exports;
-/******/ }
+/******/ // The require scope
+/******/ var __webpack_require__ = {};
 /******/ 
 /************************************************************************/
 /******/ /* webpack/runtime/define property getters */
@@ -61,67 +29,80 @@ var x = (y) => {
 } 
 var y = (x) => (() => (x))
 const interactivity_namespaceObject = x({ ["getContext"]: () => (__WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__.getContext), ["getElement"]: () => (__WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__.getElement), ["store"]: () => (__WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__.store), ["withSyncEvent"]: () => (__WEBPACK_EXTERNAL_MODULE__wordpress_interactivity_8e89b257__.withSyncEvent) });
-;// ./node_modules/@wordpress/block-library/build-module/query/view.js
+;// ./node_modules/@wordpress/block-library/build-module/search/view.js
 /**
  * WordPress dependencies
  */
 
-const isValidLink = ref => ref && ref instanceof window.HTMLAnchorElement && ref.href && (!ref.target || ref.target === '_self') && ref.origin === window.location.origin;
-const isValidEvent = event => event.button === 0 &&
-// Left clicks only.
-!event.metaKey &&
-// Open in new tab (Mac).
-!event.ctrlKey &&
-// Open in new tab (Windows).
-!event.altKey &&
-// Download.
-!event.shiftKey && !event.defaultPrevented;
-(0,interactivity_namespaceObject.store)('core/query', {
+const {
+  actions
+} = (0,interactivity_namespaceObject.store)('core/search', {
+  state: {
+    get ariaLabel() {
+      const {
+        isSearchInputVisible,
+        ariaLabelCollapsed,
+        ariaLabelExpanded
+      } = (0,interactivity_namespaceObject.getContext)();
+      return isSearchInputVisible ? ariaLabelExpanded : ariaLabelCollapsed;
+    },
+    get ariaControls() {
+      const {
+        isSearchInputVisible,
+        inputId
+      } = (0,interactivity_namespaceObject.getContext)();
+      return isSearchInputVisible ? null : inputId;
+    },
+    get type() {
+      const {
+        isSearchInputVisible
+      } = (0,interactivity_namespaceObject.getContext)();
+      return isSearchInputVisible ? 'submit' : 'button';
+    },
+    get tabindex() {
+      const {
+        isSearchInputVisible
+      } = (0,interactivity_namespaceObject.getContext)();
+      return isSearchInputVisible ? '0' : '-1';
+    }
+  },
   actions: {
-    navigate: (0,interactivity_namespaceObject.withSyncEvent)(function* (event) {
+    openSearchInput: (0,interactivity_namespaceObject.withSyncEvent)(event => {
       const ctx = (0,interactivity_namespaceObject.getContext)();
       const {
         ref
       } = (0,interactivity_namespaceObject.getElement)();
-      const queryRef = ref.closest('.wp-block-query[data-wp-router-region]');
-      if (isValidLink(ref) && isValidEvent(event)) {
+      if (!ctx.isSearchInputVisible) {
         event.preventDefault();
-        const {
-          actions
-        } = yield Promise.resolve(/* import() */).then(__webpack_require__.bind(__webpack_require__, 438));
-        yield actions.navigate(ref.href);
-        ctx.url = ref.href;
-
-        // Focus the first anchor of the Query block.
-        const firstAnchor = `.wp-block-post-template a[href]`;
-        queryRef.querySelector(firstAnchor)?.focus();
+        ctx.isSearchInputVisible = true;
+        ref.parentElement.querySelector('input').focus();
       }
     }),
-    *prefetch() {
+    closeSearchInput() {
+      const ctx = (0,interactivity_namespaceObject.getContext)();
+      ctx.isSearchInputVisible = false;
+    },
+    handleSearchKeydown(event) {
       const {
         ref
       } = (0,interactivity_namespaceObject.getElement)();
-      if (isValidLink(ref)) {
-        const {
-          actions
-        } = yield Promise.resolve(/* import() */).then(__webpack_require__.bind(__webpack_require__, 438));
-        yield actions.prefetch(ref.href);
+      // If Escape close the menu.
+      if (event?.key === 'Escape') {
+        actions.closeSearchInput();
+        ref.querySelector('button').focus();
       }
-    }
-  },
-  callbacks: {
-    *prefetch() {
-      const {
-        url
-      } = (0,interactivity_namespaceObject.getContext)();
+    },
+    handleSearchFocusout(event) {
       const {
         ref
       } = (0,interactivity_namespaceObject.getElement)();
-      if (url && isValidLink(ref)) {
-        const {
-          actions
-        } = yield Promise.resolve(/* import() */).then(__webpack_require__.bind(__webpack_require__, 438));
-        yield actions.prefetch(ref.href);
+      // If focus is outside search form, and in the document, close menu
+      // event.target === The element losing focus
+      // event.relatedTarget === The element receiving focus (if any)
+      // When focusout is outside the document,
+      // `window.document.activeElement` doesn't change.
+      if (!ref.contains(event.relatedTarget) && event.target !== window.document.activeElement) {
+        actions.closeSearchInput();
       }
     }
   }
