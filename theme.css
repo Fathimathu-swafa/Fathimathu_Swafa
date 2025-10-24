@@ -1,6 +1,12 @@
-.wp-block-code{
-  border:1px solid #ccc;
-  border-radius:4px;
-  font-family:Menlo,Consolas,monaco,monospace;
-  padding:.8em 1em;
+:root :where(.wp-block-image figcaption){
+  color:#555;
+  font-size:13px;
+  text-align:center;
+}
+.is-dark-theme :root :where(.wp-block-image figcaption){
+  color:#ffffffa6;
+}
+
+.wp-block-image{
+  margin:0 0 1em;
 }
